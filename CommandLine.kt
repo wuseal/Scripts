@@ -10,7 +10,7 @@ data class BashResult(val exitCode: Int, val stdout: Iterable<String>, val stder
 
 
 fun evalBash(cmd: String, showOutput: Boolean = false, wd: File? = null): BashResult {
-    return cmd.runCommand {
+    return cmd.runCommand(0) {
         redirectOutput(ProcessBuilder.Redirect.PIPE)
         redirectInput(ProcessBuilder.Redirect.PIPE)
         redirectError(ProcessBuilder.Redirect.PIPE)
