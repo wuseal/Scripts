@@ -16,9 +16,10 @@ fun evalBash(cmd: String, showOutput: Boolean = false, wd: File? = null): BashRe
         redirectError(ProcessBuilder.Redirect.PIPE)
         wd?.let { directory(it) }
     }.run {
-        val exitCode = exitValue()
         val stdout = inputStream.reader().readLines()
         val stderr = errorStream.reader().readLines()
+        waitFor(1, TimeUnit.HOURS)
+        val exitCode = exitValue()
         BashResult(exitCode, stdout, stderr).also {
             if (showOutput) {
                 if (exitCode == 0) {
