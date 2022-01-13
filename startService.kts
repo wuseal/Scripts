@@ -1,12 +1,16 @@
+/**
+ * this script used to start kscript service with kscript url,
+ * With this entry point used, when kscript url's script changed, the kscript url's process will auto restart and execute the new script
+ * This function maybe called hot-update script code
+ */
+
 @file:Include("https://raw.githubusercontent.com/wuseal/Scripts/main/CommandLine.kt")
 @file:CompilerOpts("-jvm-target 9")
 @file:KotlinOpts("-J-server")
 
 import java.io.File
 
-/**
- * kscript url
- */
+
 val homeDir = System.getProperty("user.home")
 
 fun obtainScriptFromUrl(url: String) = evalBash("curl -s $url").run {
