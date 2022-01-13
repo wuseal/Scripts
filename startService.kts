@@ -2,6 +2,8 @@
  * this script used to start kscript service with kscript url,
  * With this entry point used, when kscript url's script changed, the kscript url's process will auto restart and execute the new script
  * This function maybe called hot-update script code
+ * 
+ *  Demo: kscript https://raw.githubusercontent.com/wuseal/Scripts/master/startService.kts [YOU_SCRIPT_URL]
  */
 
 @file:Include("https://raw.githubusercontent.com/wuseal/Scripts/main/CommandLine.kt")
