@@ -31,7 +31,6 @@ println(localScriptFile.absolutePath)
 
 while (true) {
     val newScript: String = obtainScriptFromUrl(args[0])
-
     if (newScript.isNotEmpty() && newScript != script) {
         println("Found Job Script Changed in startService ${args[0]}, Start to execute new Job Script....")
         ProcessHandle.current().descendants().forEach { it.destroy() }
