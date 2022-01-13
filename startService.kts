@@ -1,4 +1,6 @@
 @file:Include("https://raw.githubusercontent.com/wuseal/Scripts/main/CommandLine.kt")
+@file:CompilerOpts("-jvm-target 9")
+@file:KotlinOpts("-J-server")
 
 import java.io.File
 
@@ -25,21 +27,17 @@ val localScriptFile =
 localScriptFile.writeText(script)
 
 println(localScriptFile.absolutePath)
-
-var currentProcess: Process = "kscript ${localScriptFile.absolutePath}".runCommand(0)
+"kscript ${localScriptFile.absolutePath}".runCommand(0)
 
 while (true) {
     val newScript: String = obtainScriptFromUrl(args[0])
 
     if (newScript.isNotEmpty() && newScript != script) {
         println("Found Job Script Changed in startService ${args[0]}, Start to execute new Job Script....")
-        currentProcess.let {
-            it.descendants().forEach { it.destroy() }
-            it.destroy()
-        }
+        ProcessHandle.current().descendants().forEach { it.destroy() }
         script = newScript
         localScriptFile.writeText(script)
-        currentProcess = "kscript ${localScriptFile.absolutePath}".runCommand(0)
+        "kscript ${localScriptFile.absolutePath}".runCommand(0)
     } else {
         println("Job Script not Change, Delay 1 minutes to check again....")
         Thread.sleep(60 * 1000)
