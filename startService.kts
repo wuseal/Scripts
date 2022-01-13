@@ -2,7 +2,7 @@
  * this script used to start kscript service with kscript url,
  * With this entry point used, when kscript url's script changed, the kscript url's process will auto restart and execute the new script
  * This function maybe called hot-update script code
- * 
+ *
  *  Demo: kscript https://raw.githubusercontent.com/wuseal/Scripts/master/startService.kts [YOU_SCRIPT_URL]
  */
 
@@ -38,13 +38,13 @@ println(localScriptFile.absolutePath)
 while (true) {
     val newScript: String = obtainScriptFromUrl(args[0])
     if (newScript.isNotEmpty() && newScript != script) {
-        println("Found Job Script Changed in startService ${args[0]}, Start to execute new Job Script....")
+        println("Found Service Script Changed in startService ${args[0]}, Start to execute new Job Script....")
         ProcessHandle.current().descendants().forEach { it.destroy() }
         script = newScript
         localScriptFile.writeText(script)
         "kscript ${localScriptFile.absolutePath}".runCommand(0)
     } else {
-        println("Job Script not Change, Delay 1 minutes to check again....")
+        println("Service Script not Change, Delay 1 minutes to check again....")
         Thread.sleep(60 * 1000)
     }
 }
