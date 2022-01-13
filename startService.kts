@@ -12,14 +12,14 @@ fun obtainScriptFromUrl(url: String) = evalBash(url).run {
 
 var script: String = obtainScriptFromUrl(args[0])
 
-var currentProcess : Process? = null
+var currentProcess : Process = "kscript ${args[0]}".runCommand(0)
 
 while (true) {
     val newScript: String = obtainScriptFromUrl(args[0])
 
     if (newScript.isNotEmpty() && newScript != script) {
         println("Found Job Script Changed in startService ${args[0]}, Start to execute new Job Script....")
-        currentProcess?.let {
+        currentProcess.let {
             it.descendants().forEach { it.destroy() }
             it.destroy()
         }
