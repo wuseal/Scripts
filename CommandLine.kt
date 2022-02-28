@@ -8,6 +8,12 @@ data class BashResult(val exitCode: Int, val stdout: Iterable<String>, val stder
     fun serr() = stderr.joinToString("\n").trim()
 }
 
+fun BashResult.throwIfError() {
+    if (this.exitCode != 0) {
+        throw kotlin.RuntimeException("Process exec error ${toString()}")
+    } 
+}
+
 
 fun evalBash(cmd: String, showOutput: Boolean = false, wd: File? = null): BashResult {
     return cmd.runCommand(0) {
@@ -34,9 +40,9 @@ fun evalBash(cmd: String, showOutput: Boolean = false, wd: File? = null): BashRe
 
 
 fun String.runCommand(
-    timeoutValue: Long = 60,
-    timeoutUnit: TimeUnit = TimeUnit.MINUTES,
-    processConfig: ProcessBuilder.() -> Unit = {}
+        timeoutValue: Long = 60,
+        timeoutUnit: TimeUnit = TimeUnit.MINUTES,
+        processConfig: ProcessBuilder.() -> Unit = {}
 ): Process {
     ProcessBuilder("/bin/bash", "-c", this).run {
         directory(File("."))
