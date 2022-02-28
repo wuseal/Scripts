@@ -8,10 +8,11 @@ data class BashResult(val exitCode: Int, val stdout: Iterable<String>, val stder
     fun serr() = stderr.joinToString("\n").trim()
 }
 
-fun BashResult.throwIfError() {
+fun BashResult.throwIfError(): BashResult {
     if (this.exitCode != 0) {
         throw kotlin.RuntimeException("Process exec error ${toString()}")
-    } 
+    }
+    return this
 }
 
 
@@ -58,8 +59,9 @@ fun String.runCommand(
     }
 }
 
-fun Process.throwIfError() {
+fun Process.throwIfError(): Process {
     if (this.exitValue() != 0) {
         throw kotlin.RuntimeException("Process exec error ${toString()}")
     }
+    return this
 }
