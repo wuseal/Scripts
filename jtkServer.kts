@@ -29,8 +29,8 @@ val homeDir = System.getProperty("user.home")
 val jtkServerExceptionLogDir = File(homeDir, "JSONToKotlinClass/Exceptions")
 jtkServerExceptionLogDir.mkdirs()
 val sslFilePassWord = System.getenv("JTK_SSL_PASSWORD")
-val hostName = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank().not()) "jsontokotlin.sealwu.com" else "localhost"
-val protocal = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank().not()) "https" else "http"
+val hostName = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank()) "jsontokotlin.sealwu.com:8443" else "localhost"
+val protocal = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank()) "https" else "http"
 
 fun writeExceptionLog(exceptionInfo: String) {
     val day = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(Date())
