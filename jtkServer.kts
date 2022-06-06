@@ -38,7 +38,7 @@ fun writeExceptionLog(exceptionInfo: String) {
     if (!dayDir.exists()) {
         dayDir.mkdirs()
     }
-    File(dayDir, Date().time.toString()).writeText(exceptionInfo)
+    File(dayDir, Date().time.toString() + ".log").writeText(exceptionInfo)
 }
 
 val apiModule: Application.() -> Unit = {
