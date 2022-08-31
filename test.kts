@@ -1,5 +1,2 @@
-println("Hi, It's here===")
-println("Hi, It's here===")
-println("Hi, It's here===")
-println("Hi, It's here==="
-println("Hi, It's here===")
+@file:DependsOn("com.sealwu:kscript-tools:1.0.2")
+"ls".runCommand()
