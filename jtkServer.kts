@@ -7,22 +7,22 @@ exec kscript $0 "$@"
 @file:DependsOn("io.ktor:ktor-server-core-jvm:2.0.2")
 @file:DependsOn("io.ktor:ktor-client-core-jvm:2.0.2")
 @file:DependsOn("io.ktor:ktor-client-cio-jvm:2.0.2")
-@file:DependsOn("io.ktor:ktor-client-content-negotiation-jvm::2.0.2")
 @file:DependsOn("io.ktor:ktor-server-netty-jvm:2.0.2")
 @file:DependsOn("io.ktor:ktor-network-tls-certificates-jvm:2.0.2")
 @file:DependsOn("ch.qos.logback:logback-classic:1.2.11")
 @file:DependsOn("io.ktor:ktor-server-freemarker:2.0.2")
-@file:DependsOn("io.ktor:ktor-serialization-kotlinx-json-jvm:2.0.2")
-@file:DependsOn("io.ktor:ktor-server-content-negotiation-jvm:2.0.2")
-
+@file:DependsOn("com.squareup.moshi:moshi:1.12.0")
+@file:DependsOn("com.squareup.moshi:moshi-kotlin:1.12.0")
 
 @file:CompilerOpts("-jvm-target 11")
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
@@ -43,11 +43,8 @@ jtkServerExceptionLogDir.mkdirs()
 val sslFilePassWord = System.getenv("JTK_SSL_PASSWORD")
 val hostName = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank()) "jsontokotlin.sealwu.com:8443" else "localhost"
 val protocal = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank()) "https" else "http"
-val client = HttpClient(CIO) {
-    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-        json()
-    }
-}
+val client = HttpClient(CIO)
+val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 fun writeExceptionLog(exceptionInfo: String) {
     val day = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(Date())
     val dayDir = File(jtkServerExceptionLogDir, day)
@@ -103,9 +100,6 @@ data class Usage(
 )
 
 val apiModule: Application.() -> Unit = {
-    install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) {
-        json()
-    }
     routing {
         post("/sendExceptionInfo") {
             println("Deal with api sendExceptionInfo")
@@ -119,11 +113,23 @@ val apiModule: Application.() -> Unit = {
             val chatCompletion = ChatCompletion("gpt-4", listOf(message), max_tokens = 1500, temperature = 0.1)
             client.post("https://api.openai.com/v1/chat/completions"){
                 headers {
+                    append("Content-Type", "application/json")
                     append("Authorization", "Bearer ${System.getenv("OPENAI_API_KEY")}")
                 }
-                setBody(chatCompletion)
+                val jsonAdapter = moshi.adapter(ChatCompletion::class.java)
+                val chatCompletionJson = jsonAdapter.toJson(chatCompletion)
+
+                setBody(chatCompletionJson)
             }.let {
-                call.respond(it)
+                println(it)
+                val jsonAdapter = moshi.adapter(ResponseData::class.java)
+                val responseData = jsonAdapter.fromJson(it.bodyAsText())
+                val reply = if (responseData?.error?.message != null) {
+                    responseData.error.message
+                } else {
+                    responseData?.choices?.first()?.message?.content
+                }
+                call.respondText(reply?: "Sorry, I don't receive any response from GPT-4.")
             }
         }
         get("/") {
