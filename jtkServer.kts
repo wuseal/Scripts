@@ -7,7 +7,7 @@ exec kscript $0 "$@"
 @file:DependsOn("io.ktor:ktor-server-core-jvm:2.0.2")
 @file:DependsOn("io.ktor:ktor-client-core-jvm:2.0.2")
 @file:DependsOn("io.ktor:ktor-client-cio-jvm:2.0.2")
-@file:DependsOn("io.ktor:ktor-client-content-negotiation::2.0.2")
+@file:DependsOn("io.ktor:ktor-client-content-negotiation-jvm::2.0.2")
 @file:DependsOn("io.ktor:ktor-server-netty-jvm:2.0.2")
 @file:DependsOn("io.ktor:ktor-network-tls-certificates-jvm:2.0.2")
 @file:DependsOn("ch.qos.logback:logback-classic:1.2.11")
@@ -20,7 +20,6 @@ exec kscript $0 "$@"
 
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -45,7 +44,7 @@ val sslFilePassWord = System.getenv("JTK_SSL_PASSWORD")
 val hostName = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank()) "jsontokotlin.sealwu.com:8443" else "localhost"
 val protocal = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank()) "https" else "http"
 val client = HttpClient(CIO) {
-    install(ContentNegotiation) {
+    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
         json()
     }
 }
