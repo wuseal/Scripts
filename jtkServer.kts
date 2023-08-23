@@ -20,6 +20,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -43,7 +44,11 @@ jtkServerExceptionLogDir.mkdirs()
 val sslFilePassWord = System.getenv("JTK_SSL_PASSWORD")
 val hostName = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank()) "jsontokotlin.sealwu.com:8443" else "localhost"
 val protocal = if (System.getenv("GITHUB_USER_NAME").isNullOrBlank()) "https" else "http"
-val client = HttpClient(CIO)
+val client = HttpClient(CIO){
+    install(HttpTimeout){
+        requestTimeoutMillis = 60000 * 5
+    }
+}
 val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 fun writeExceptionLog(exceptionInfo: String) {
     val day = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(Date())
@@ -111,25 +116,29 @@ val apiModule: Application.() -> Unit = {
             val question = call.receive<String>()
             val message = Message("user", question)
             val chatCompletion = ChatCompletion("gpt-4", listOf(message), max_tokens = 1500, temperature = 0.1)
-            client.post("https://api.openai.com/v1/chat/completions"){
-                headers {
-                    append("Content-Type", "application/json")
-                    append("Authorization", "Bearer ${System.getenv("OPENAI_API_KEY")}")
-                }
-                val jsonAdapter = moshi.adapter(ChatCompletion::class.java)
-                val chatCompletionJson = jsonAdapter.toJson(chatCompletion)
+            try {
+                client.post("https://api.openai.com/v1/chat/completions"){
+                    headers {
+                        append("Content-Type", "application/json")
+                        append("Authorization", "Bearer ${System.getenv("OPENAI_API_KEY")}")
+                    }
+                    val jsonAdapter = moshi.adapter(ChatCompletion::class.java)
+                    val chatCompletionJson = jsonAdapter.toJson(chatCompletion)
 
-                setBody(chatCompletionJson)
-            }.let {
-                println(it)
-                val jsonAdapter = moshi.adapter(ResponseData::class.java)
-                val responseData = jsonAdapter.fromJson(it.bodyAsText())
-                val reply = if (responseData?.error?.message != null) {
-                    responseData.error.message
-                } else {
-                    responseData?.choices?.first()?.message?.content
+                    setBody(chatCompletionJson)
+                }.let {
+                    println(it)
+                    val jsonAdapter = moshi.adapter(ResponseData::class.java)
+                    val responseData = jsonAdapter.fromJson(it.bodyAsText())
+                    val reply = if (responseData?.error?.message != null) {
+                        responseData.error.message
+                    } else {
+                        responseData?.choices?.first()?.message?.content
+                    }
+                    call.respondText(reply?: "Sorry, I don't receive any response from GPT-4.")
                 }
-                call.respondText(reply?: "Sorry, I don't receive any response from GPT-4.")
+            } catch (e: Exception) {
+                call.respondText("Error: ${e.message} \n exception log: ${e.stackTraceToString()}")
             }
         }
         get("/") {
