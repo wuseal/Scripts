@@ -115,7 +115,7 @@ val apiModule: Application.() -> Unit = {
         post("/gpt4"){
             val question = call.receive<String>()
             val message = Message("user", question)
-            val chatCompletion = ChatCompletion("gpt-4-1106-preview", listOf(message), max_tokens = 4096, temperature = 0.1)
+            val chatCompletion = ChatCompletion("gpt-4o", listOf(message), max_tokens = 120000, temperature = 0.1)
             try {
                 client.post("https://api.openai.com/v1/chat/completions"){
                     headers {
